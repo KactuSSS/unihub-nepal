@@ -3,18 +3,20 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GraduationCap, Mail, Lock, ArrowRight, Building2 } from "lucide-react";
+import { GraduationCap, Mail, Lock, ArrowRight, User, Building2, BookOpen } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
-const Login = () => {
+const Register = () => {
   const navigate = useNavigate();
-  const { signIn, user } = useAuth();
+  const { signUp, user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
+    fullName: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
   useEffect(() => {
@@ -25,22 +27,41 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
-    const { error } = await signIn(formData.email, formData.password);
+    const { error } = await signUp(formData.email, formData.password, formData.fullName);
     
     setIsLoading(false);
 
     if (error) {
       toast({
-        title: "Login failed",
+        title: "Registration failed",
         description: error.message,
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Welcome back!",
-        description: "You've successfully logged in.",
+        title: "Account created!",
+        description: "Welcome to PaperHub Nepal. You're now logged in.",
       });
       navigate("/dashboard");
     }
@@ -63,33 +84,33 @@ const Login = () => {
           </Link>
           
           <h1 className="text-4xl font-bold mb-6 leading-tight">
-            Welcome Back,<br />
-            Future Achiever!
+            Join Nepal's Premier<br />
+            Academic Community
           </h1>
           
           <p className="text-white/80 text-lg mb-8 max-w-md">
-            Login with your university credentials to access personalized exam papers, 
-            model answers, and career opportunities.
+            Get access to exam papers, model answers, and career opportunities 
+            tailored to your university and program.
           </p>
           
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-white/80">
               <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                <Building2 className="w-5 h-5" />
+                <BookOpen className="w-5 h-5" />
               </div>
-              <span>Access papers from your university</span>
+              <span>Access 10,000+ exam papers</span>
             </div>
             <div className="flex items-center gap-3 text-white/80">
               <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                <Lock className="w-5 h-5" />
+                <Building2 className="w-5 h-5" />
               </div>
-              <span>Secure and verified content</span>
+              <span>Connect with top employers</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right Panel - Login Form */}
+      {/* Right Panel - Register Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
@@ -102,21 +123,37 @@ const Login = () => {
 
           <div className="glass-card p-8">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-foreground mb-2">Sign In</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Create Account</h2>
               <p className="text-muted-foreground">
-                Your university determines the content you see.
+                Start your academic journey today.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email">University Email / Student ID</Label>
+                <Label htmlFor="fullName">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="Ram Sharma"
+                    className="pl-10 h-12 rounded-xl bg-white/50 border-border/50 focus:border-primary"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="student@tu.edu.np"
+                    placeholder="ram@email.com"
                     className="pl-10 h-12 rounded-xl bg-white/50 border-border/50 focus:border-primary"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -141,14 +178,20 @@ const Login = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="rounded border-border" />
-                  <span className="text-muted-foreground">Remember me</span>
-                </label>
-                <a href="#" className="text-primary hover:underline font-medium">
-                  Forgot password?
-                </a>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    className="pl-10 h-12 rounded-xl bg-white/50 border-border/50 focus:border-primary"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    required
+                  />
+                </div>
               </div>
 
               <Button
@@ -161,7 +204,7 @@ const Login = () => {
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    Sign In
+                    Create Account
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </>
                 )}
@@ -170,9 +213,9 @@ const Login = () => {
 
             <div className="mt-6 text-center">
               <p className="text-muted-foreground text-sm">
-                Don't have an account?{" "}
-                <Link to="/register" className="text-primary hover:underline font-medium">
-                  Register here
+                Already have an account?{" "}
+                <Link to="/login" className="text-primary hover:underline font-medium">
+                  Sign in here
                 </Link>
               </p>
             </div>
@@ -181,9 +224,9 @@ const Login = () => {
           {/* Decorative illustration */}
           <div className="mt-8 text-center">
             <div className="inline-flex items-center gap-4 px-6 py-3 rounded-full bg-white/50 backdrop-blur-xl border border-white/50">
-              <span className="text-3xl">📚</span>
               <span className="text-3xl">🎓</span>
-              <span className="text-3xl">✨</span>
+              <span className="text-3xl">📝</span>
+              <span className="text-3xl">🚀</span>
             </div>
           </div>
         </div>
@@ -192,4 +235,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;
