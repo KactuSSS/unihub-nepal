@@ -2,10 +2,8 @@ import { BubbleNav } from "@/components/BubbleNav";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { 
-  User, 
   Building2, 
   GraduationCap, 
-  Mail, 
   Calendar, 
   Crown,
   LogOut,
@@ -14,21 +12,53 @@ import {
   FileText,
   Star
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Profile {
+  full_name: string | null;
+  email: string | null;
+  bio: string | null;
+  location: string | null;
+  avatar_url: string | null;
+  created_at: string;
+}
 
 const Profile = () => {
-  const user = {
-    name: "Aarav Sharma",
-    email: "aarav.sharma@tu.edu.np",
-    studentId: "BCT-078-345",
-    university: "Tribhuvan University",
-    campus: "IOE Pulchowk Campus",
-    program: "B.E. Computer Engineering",
-    semester: "5th Semester",
-    batch: "2078",
-    joinedDate: "September 2024",
-    isPremium: false,
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      
+      if (data) {
+        setProfile(data);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
   };
+
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
+  const initials = displayName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  const joinedDate = profile?.created_at 
+    ? new Date(profile.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+    : "Recently";
 
   const stats = [
     { icon: <FileText className="w-5 h-5" />, value: "127", label: "Papers Viewed" },
@@ -47,22 +77,15 @@ const Profile = () => {
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
               {/* Avatar */}
               <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-4xl font-bold text-white shadow-glow">
-                {user.name.split(" ").map((n) => n[0]).join("")}
+                {initials}
               </div>
               
               {/* Info */}
               <div className="flex-1 text-center md:text-left">
                 <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-                  <h1 className="text-2xl font-bold text-foreground">{user.name}</h1>
-                  {user.isPremium && (
-                    <span className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-amber-400 to-amber-500 text-white rounded-full flex items-center gap-1">
-                      <Crown className="w-3 h-3" />
-                      Premium
-                    </span>
-                  )}
+                  <h1 className="text-2xl font-bold text-foreground">{displayName}</h1>
                 </div>
-                <p className="text-muted-foreground mb-1">{user.email}</p>
-                <p className="text-sm text-muted-foreground">Student ID: {user.studentId}</p>
+                <p className="text-muted-foreground mb-1">{user?.email}</p>
               </div>
 
               {/* Actions */}
@@ -70,7 +93,11 @@ const Profile = () => {
                 <Button variant="glass" size="icon" className="rounded-xl">
                   <Settings className="w-5 h-5" />
                 </Button>
-                <Button variant="glass" className="rounded-xl text-destructive hover:bg-destructive hover:text-white">
+                <Button 
+                  variant="glass" 
+                  className="rounded-xl text-destructive hover:bg-destructive hover:text-white"
+                  onClick={handleLogout}
+                >
                   <LogOut className="w-5 h-5 mr-2" />
                   Logout
                 </Button>
@@ -91,45 +118,33 @@ const Profile = () => {
             ))}
           </div>
 
-          {/* Academic Info */}
+          {/* Account Info */}
           <div className="glass-card p-6 mb-6">
             <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-primary" />
-              Academic Information
+              Account Information
             </h2>
             
             <div className="grid sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-muted/30">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                  <Building2 className="w-4 h-4" />
-                  University
+              {profile?.location && (
+                <div className="p-4 rounded-xl bg-muted/30">
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                    <Building2 className="w-4 h-4" />
+                    Location
+                  </div>
+                  <p className="font-medium text-foreground">{profile.location}</p>
                 </div>
-                <p className="font-medium text-foreground">{user.university}</p>
-              </div>
+              )}
               
-              <div className="p-4 rounded-xl bg-muted/30">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                  <Building2 className="w-4 h-4" />
-                  Campus
+              {profile?.bio && (
+                <div className="p-4 rounded-xl bg-muted/30 sm:col-span-2">
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                    <FileText className="w-4 h-4" />
+                    Bio
+                  </div>
+                  <p className="font-medium text-foreground">{profile.bio}</p>
                 </div>
-                <p className="font-medium text-foreground">{user.campus}</p>
-              </div>
-              
-              <div className="p-4 rounded-xl bg-muted/30">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                  <FileText className="w-4 h-4" />
-                  Program
-                </div>
-                <p className="font-medium text-foreground">{user.program}</p>
-              </div>
-              
-              <div className="p-4 rounded-xl bg-muted/30">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                  <Calendar className="w-4 h-4" />
-                  Current Semester
-                </div>
-                <p className="font-medium text-foreground">{user.semester} (Batch {user.batch})</p>
-              </div>
+              )}
             </div>
           </div>
 
@@ -140,37 +155,25 @@ const Profile = () => {
               Subscription Status
             </h2>
             
-            {user.isPremium ? (
-              <div className="p-4 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200">
-                <div className="flex items-center gap-3">
-                  <Crown className="w-8 h-8 text-amber-500" />
-                  <div>
-                    <p className="font-semibold text-foreground">Premium Member</p>
-                    <p className="text-sm text-muted-foreground">Active until December 2025</p>
-                  </div>
+            <div className="p-4 rounded-xl bg-muted/30">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <p className="font-semibold text-foreground">Free Plan</p>
+                  <p className="text-sm text-muted-foreground">Upgrade to access model answers & frameworks</p>
                 </div>
+                <Link to="/answers">
+                  <Button variant="premium">
+                    <Crown className="w-4 h-4 mr-2" />
+                    Upgrade to Premium
+                  </Button>
+                </Link>
               </div>
-            ) : (
-              <div className="p-4 rounded-xl bg-muted/30">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <p className="font-semibold text-foreground">Free Plan</p>
-                    <p className="text-sm text-muted-foreground">Upgrade to access model answers & frameworks</p>
-                  </div>
-                  <Link to="/answers">
-                    <Button variant="premium">
-                      <Crown className="w-4 h-4 mr-2" />
-                      Upgrade to Premium
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Member Since */}
           <div className="text-center text-muted-foreground text-sm">
-            <p>Member since {user.joinedDate}</p>
+            <p>Member since {joinedDate}</p>
           </div>
         </div>
       </section>

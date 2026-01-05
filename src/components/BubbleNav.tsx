@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { FileText, Lock, Briefcase, User, GraduationCap } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { FileText, Lock, Briefcase, User, GraduationCap, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 interface NavItem {
   label: string;
@@ -18,7 +20,14 @@ const navItems: NavItem[] = [
 
 export const BubbleNav = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const { user, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <nav className="nav-float">
@@ -68,6 +77,22 @@ export const BubbleNav = () => {
             </Link>
           );
         })}
+
+        {/* Logout Button */}
+        {user && (
+          <>
+            <div className="w-px h-6 bg-border/50 mx-2 hidden sm:block" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden md:block ml-2">Logout</span>
+            </Button>
+          </>
+        )}
       </div>
     </nav>
   );

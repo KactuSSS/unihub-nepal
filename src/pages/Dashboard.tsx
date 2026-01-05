@@ -5,6 +5,9 @@ import { FilterSidebar } from "@/components/FilterSidebar";
 import { Footer } from "@/components/Footer";
 import { FileText, Building2, Calendar, BookOpen, Users } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const dashboardStats = [
   { icon: <FileText className="w-5 h-5" />, value: "2,450", label: "Papers Available" },
@@ -23,6 +26,30 @@ const recentPapers = [
 ];
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
+      
+      if (data) {
+        setProfile(data);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
+
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
+  const initials = displayName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+
   return (
     <div className="min-h-screen bg-background">
       <BubbleNav />
@@ -44,11 +71,11 @@ const Dashboard = () => {
               </div>
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <p className="font-semibold text-foreground">Aarav Sharma</p>
-                  <p className="text-sm text-muted-foreground">BCT 078 • 5th Semester</p>
+                  <p className="font-semibold text-foreground">{displayName}</p>
+                  <p className="text-sm text-muted-foreground">{user?.email}</p>
                 </div>
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-xl font-bold text-primary">
-                  AS
+                  {initials}
                 </div>
               </div>
             </div>
