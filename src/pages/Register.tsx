@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { GraduationCap, Mail, Lock, ArrowRight, User, Building2, BookOpen } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-
+import { registrationSchema } from "@/lib/validation";
+import { z } from "zod";
 const Register = () => {
   const navigate = useNavigate();
   const { signUp, user } = useAuth();
@@ -28,19 +29,14 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.password !== formData.confirmPassword) {
+    // Validate form data using zod schema
+    const validationResult = registrationSchema.safeParse(formData);
+    
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
       toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters long.",
+        title: "Validation Error",
+        description: firstError.message,
         variant: "destructive",
       });
       return;
