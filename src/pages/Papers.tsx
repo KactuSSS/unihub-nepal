@@ -16,9 +16,22 @@ interface Paper {
   semester: string;
   examType: string;
   faculty: string;
+  program?: string;
+  courseCode?: string;
+  pdfUrl?: string;
 }
 
 const allPapers: Paper[] = [
+  { 
+    subject: "Financial Management", 
+    year: 2024, 
+    semester: "3rd Sem", 
+    examType: "Mid-Term", 
+    faculty: "Management",
+    program: "BBA",
+    courseCode: "FIN 301",
+    pdfUrl: "/papers/financial-management-bba-2024-sem3.pdf"
+  },
   { subject: "Data Structures & Algorithms", year: 2024, semester: "3rd Sem", examType: "Final", faculty: "Engineering" },
   { subject: "Computer Networks", year: 2024, semester: "5th Sem", examType: "Final", faculty: "Engineering" },
   { subject: "Database Management System", year: 2024, semester: "4th Sem", examType: "Internal", faculty: "Engineering" },
