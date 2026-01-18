@@ -27,11 +27,36 @@ const allPapers = [
 const Papers = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
 
-  const filteredPapers = allPapers.filter((paper) =>
-    paper.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    paper.faculty.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleFiltersChange = (filters: Record<string, string[]>) => {
+    setActiveFilters(filters);
+  };
+
+  const filteredPapers = allPapers.filter((paper) => {
+    // Search filter
+    const matchesSearch = 
+      paper.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      paper.faculty.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Faculty filter
+    const facultyFilters = activeFilters["Faculty"] || [];
+    const matchesFaculty = facultyFilters.length === 0 || 
+      facultyFilters.includes(paper.faculty.toLowerCase());
+
+    // Year filter
+    const yearFilters = activeFilters["Year"] || [];
+    const matchesYear = yearFilters.length === 0 || 
+      yearFilters.includes(paper.year.toString());
+
+    // Semester filter - extract semester number from "3rd Sem" format
+    const semesterFilters = activeFilters["Semester"] || [];
+    const semesterNumber = paper.semester.match(/(\d+)/)?.[1] || "";
+    const matchesSemester = semesterFilters.length === 0 || 
+      semesterFilters.includes(semesterNumber);
+
+    return matchesSearch && matchesFaculty && matchesYear && matchesSemester;
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -72,7 +97,7 @@ const Papers = () => {
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Filter Sidebar */}
             <div className="w-full lg:w-72 flex-shrink-0">
-              <FilterSidebar />
+              <FilterSidebar onFiltersChange={handleFiltersChange} />
             </div>
 
             {/* Papers Grid */}
