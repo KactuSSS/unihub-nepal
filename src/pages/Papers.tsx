@@ -4,12 +4,21 @@ import { AdBanner } from "@/components/AdBanner";
 import { PaperCard } from "@/components/PaperCard";
 import { FilterSidebar } from "@/components/FilterSidebar";
 import { Footer } from "@/components/Footer";
+import { PaperPreviewDialog } from "@/components/PaperPreviewDialog";
 import { Search, Grid3X3, List } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const allPapers = [
+interface Paper {
+  subject: string;
+  year: number;
+  semester: string;
+  examType: string;
+  faculty: string;
+}
+
+const allPapers: Paper[] = [
   { subject: "Data Structures & Algorithms", year: 2024, semester: "3rd Sem", examType: "Final", faculty: "Engineering" },
   { subject: "Computer Networks", year: 2024, semester: "5th Sem", examType: "Final", faculty: "Engineering" },
   { subject: "Database Management System", year: 2024, semester: "4th Sem", examType: "Internal", faculty: "Engineering" },
@@ -28,9 +37,16 @@ const Papers = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
+  const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const handleFiltersChange = (filters: Record<string, string[]>) => {
     setActiveFilters(filters);
+  };
+
+  const handleViewPaper = (paper: Paper) => {
+    setSelectedPaper(paper);
+    setPreviewOpen(true);
   };
 
   const filteredPapers = allPapers.filter((paper) => {
@@ -136,7 +152,12 @@ const Papers = () => {
               )}>
                 {filteredPapers.map((paper, index) => (
                   <>
-                    <PaperCard key={index} {...paper} className={viewMode === "list" ? "flex-row" : ""} />
+                    <PaperCard 
+                      key={index} 
+                      {...paper} 
+                      className={viewMode === "list" ? "flex-row" : ""} 
+                      onView={() => handleViewPaper(paper)}
+                    />
                     {/* Inline ad every 6 papers */}
                     {(index + 1) % 6 === 0 && index !== filteredPapers.length - 1 && (
                       <div key={`ad-${index}`} className={viewMode === "grid" ? "sm:col-span-2 xl:col-span-3" : ""}>
@@ -167,6 +188,12 @@ const Papers = () => {
       </section>
 
       <Footer />
+
+      <PaperPreviewDialog 
+        paper={selectedPaper} 
+        open={previewOpen} 
+        onOpenChange={setPreviewOpen} 
+      />
     </div>
   );
 };
