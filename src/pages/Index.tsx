@@ -1,10 +1,12 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BubbleNav } from "@/components/BubbleNav";
 import heroIllustration from "@/assets/hero-illustration.png";
 import { AdBanner } from "@/components/AdBanner";
 import { PaperCard } from "@/components/PaperCard";
 import { PricingCard } from "@/components/PricingCard";
+import { SubscriptionDialog } from "@/components/SubscriptionDialog";
 import { Footer } from "@/components/Footer";
 import { 
   GraduationCap, 
@@ -104,6 +106,19 @@ const universities = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [selectedPlan, setSelectedPlan] = useState<{ title: string; price: string; period: string } | null>(null);
+  const [subscriptionOpen, setSubscriptionOpen] = useState(false);
+
+  const handleSelectPlan = (plan: { title: string; price: string; period: string }) => {
+    setSelectedPlan(plan);
+    setSubscriptionOpen(true);
+  };
+
+  const handleViewPaper = () => {
+    navigate("/papers");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <BubbleNav />
@@ -250,7 +265,7 @@ const Index = () => {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {samplePapers.map((paper, index) => (
-              <PaperCard key={index} {...paper} />
+              <PaperCard key={index} {...paper} onView={handleViewPaper} />
             ))}
           </div>
 
@@ -275,7 +290,7 @@ const Index = () => {
 
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {pricingPlans.map((plan, index) => (
-              <PricingCard key={index} {...plan} />
+              <PricingCard key={index} {...plan} onSelect={() => handleSelectPlan(plan)} />
             ))}
           </div>
         </div>
@@ -317,6 +332,12 @@ const Index = () => {
       </div>
 
       <Footer />
+
+      <SubscriptionDialog
+        plan={selectedPlan}
+        open={subscriptionOpen}
+        onOpenChange={setSubscriptionOpen}
+      />
     </div>
   );
 };

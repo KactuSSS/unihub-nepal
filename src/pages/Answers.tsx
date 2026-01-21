@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { BubbleNav } from "@/components/BubbleNav";
 import { AdBanner } from "@/components/AdBanner";
 import { PricingCard } from "@/components/PricingCard";
+import { SubscriptionDialog } from "@/components/SubscriptionDialog";
 import { Footer } from "@/components/Footer";
 import { Lock, Star, MessageSquare, Eye, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -67,6 +69,19 @@ const pricingPlans = [
 ];
 
 const Answers = () => {
+  const [selectedPlan, setSelectedPlan] = useState<{ title: string; price: string; period: string } | null>(null);
+  const [subscriptionOpen, setSubscriptionOpen] = useState(false);
+
+  const handleSelectPlan = (plan: { title: string; price: string; period: string }) => {
+    setSelectedPlan(plan);
+    setSubscriptionOpen(true);
+  };
+
+  const handleUpgradeClick = () => {
+    // Default to yearly plan when clicking Upgrade Now
+    handleSelectPlan(pricingPlans[1]);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <BubbleNav />
@@ -124,7 +139,7 @@ const Answers = () => {
                 <p className="text-muted-foreground mb-4 text-center max-w-sm">
                   Subscribe to view model answers, exam frameworks, and study guides.
                 </p>
-                <Button variant="premium" size="lg">
+                <Button variant="premium" size="lg" onClick={handleUpgradeClick}>
                   Upgrade Now
                 </Button>
               </div>
@@ -162,7 +177,7 @@ const Answers = () => {
 
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {pricingPlans.map((plan, index) => (
-              <PricingCard key={index} {...plan} />
+              <PricingCard key={index} {...plan} onSelect={() => handleSelectPlan(plan)} />
             ))}
           </div>
 
@@ -179,6 +194,12 @@ const Answers = () => {
       </section>
 
       <Footer />
+
+      <SubscriptionDialog
+        plan={selectedPlan}
+        open={subscriptionOpen}
+        onOpenChange={setSubscriptionOpen}
+      />
     </div>
   );
 };

@@ -9,6 +9,7 @@ interface PricingCardProps {
   features: string[];
   isPopular?: boolean;
   className?: string;
+  onSelect?: () => void;
 }
 
 export const PricingCard = ({
@@ -18,6 +19,7 @@ export const PricingCard = ({
   features,
   isPopular = false,
   className,
+  onSelect,
 }: PricingCardProps) => {
   return (
     <div
@@ -91,6 +93,7 @@ export const PricingCard = ({
           "w-full",
           isPopular && "text-primary hover:bg-white"
         )}
+        onClick={onSelect}
       >
         Get Started
       </Button>
