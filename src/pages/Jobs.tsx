@@ -2,11 +2,21 @@ import { useState } from "react";
 import { BubbleNav } from "@/components/BubbleNav";
 import { AdBanner } from "@/components/AdBanner";
 import { JobCard } from "@/components/JobCard";
+import { JobApplicationDialog } from "@/components/JobApplicationDialog";
 import { Footer } from "@/components/Footer";
 import { Search, Filter, Briefcase, GraduationCap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+interface Job {
+  company: string;
+  role: string;
+  location: string;
+  deadline: string;
+  type: "internship" | "job";
+  isPaid?: boolean;
+}
 
 const allJobs = [
   {
@@ -80,6 +90,13 @@ type FilterType = "all" | "internship" | "job";
 const Jobs = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<FilterType>("all");
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [applicationOpen, setApplicationOpen] = useState(false);
+
+  const handleApply = (job: Job) => {
+    setSelectedJob(job);
+    setApplicationOpen(true);
+  };
 
   const filteredJobs = allJobs.filter((job) => {
     const matchesSearch = 
@@ -154,7 +171,11 @@ const Jobs = () => {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredJobs.map((job, index) => (
-              <JobCard key={index} {...job} />
+              <JobCard 
+                key={index} 
+                {...job} 
+                onApply={() => handleApply(job)}
+              />
             ))}
           </div>
 
@@ -174,6 +195,12 @@ const Jobs = () => {
       </section>
 
       <Footer />
+
+      <JobApplicationDialog
+        job={selectedJob}
+        open={applicationOpen}
+        onOpenChange={setApplicationOpen}
+      />
     </div>
   );
 };

@@ -10,6 +10,7 @@ interface JobCardProps {
   type: "internship" | "job";
   isPaid?: boolean;
   className?: string;
+  onApply?: () => void;
 }
 
 export const JobCard = ({
@@ -20,6 +21,7 @@ export const JobCard = ({
   type,
   isPaid = true,
   className,
+  onApply,
 }: JobCardProps) => {
   return (
     <div className={cn("glass-card p-5 card-hover group", className)}>
@@ -67,6 +69,7 @@ export const JobCard = ({
       <Button
         variant="glass"
         className="w-full group-hover:bg-primary group-hover:text-white transition-all duration-300"
+        onClick={onApply}
       >
         <ExternalLink className="w-4 h-4 mr-2" />
         Apply Now
